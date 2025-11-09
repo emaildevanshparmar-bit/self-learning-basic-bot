@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeoBot – Self-Learning Chat</title>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: radial-gradient(circle at top, #0a0a0a 0%, #000 80%);
+      color: #0ff;
+      font-family: "Courier New", monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      margin: 20px 0 10px;
+      color: #0ff;
+      text-shadow: 0 0 10px #0ff;
+    }
+    #chat {
+      flex: 1;
+      width: 90%;
+      max-width: 700px;
+      border: 1px solid #0ff;
+      border-radius: 10px;
+      padding: 10px;
+      overflow-y: auto;
+      background: rgba(0, 255, 255, 0.05);
+      box-shadow: 0 0 20px #0ff2;
+    }
+    .msg { margin: 5px 0; }
+    .user { color: #8f8; }
+    .bot { color: #0ff; }
+    #inputArea {
+      width: 90%;
+      max-width: 700px;
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    input {
+      flex: 1;
+      background: #000;
+      color: #0ff;
+      border: 1px solid #0ff;
+      border-radius: 5px;
+      padding: 8px;
+    }
+    button {
+      background: #0ff;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 15px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #000;
+      transition: 0.2s;
+    }
+    button:hover { background: #8ff; }
+    #teachBox {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+      width: 90%;
+      max-width: 700px;
+      background: rgba(0, 255, 255, 0.08);
+      border: 1px solid #0ff;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    #teachBox input {
+      width: 100%;
+      border: 1px solid #0ff;
+    }
+    #forget {
+      margin-bottom: 10px;
+      background: #f00;
+      color: #fff;
+    }
+    #forget:hover { background: #f66; }
+    ::selection { background: #0ff; color: #000; }
+  </style>
+</head>
+<body>
+  <h1>🤖 NeoBot</h1>
+  <button id="forget">Forget Everything</button>
+
+  <div id="chat"></div>
+
+  <div id="inputArea">
+    <input id="userInput" placeholder="Type your message..." autocomplete="off" />
+    <button id="sendBtn">Send</button>
+  </div>
+
+  <div id="teachBox">
+    <p id="teachPrompt"></p>
+    <input id="teachInput" placeholder="Type what I should reply..." />
+    <button id="teachSave">Save</button>
+  </div>
+
+  <script>
+    // ===== Brain and memory =====
+    let memory = JSON.parse(localStorage.getItem("neobotMemory") || "{}");
+
+    const chat = document.getElementById("chat");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const teachBox = document.getElementById("teachBox");
+    const teachPrompt = document.getElementById("teachPrompt");
+    const teachInput = document.getElementById("teachInput");
+    const forgetBtn = document.getElementById("forget");
+
+    let pendingQuestion = null;
+
+    function print(role, text) {
+      const div = document.createElement("div");
+      div.classList.add("msg", role);
+      div.textContent = (role === "user" ? "You: " : "Bot: ") + text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function saveMemory() {
+      localStorage.setItem("neobotMemory", JSON.stringify(memory));
+    }
+
+    function talk() {
+      const msg = userInput.value.trim();
+      if (!msg) return;
+      print("user", msg);
+      userInput.value = "";
+
+      const key = msg.toLowerCase();
+      if (memory[key]) {
+        const replies = memory[key];
+        const reply = replies[Math.floor(Math.random() * replies.length)];
+        print("bot", reply);
+      } else {
+        pendingQuestion = key;
+        teachPrompt.textContent = `I don't know how to reply to "${msg}". What should I say?`;
+        teachBox.style.display = "flex";
+      }
+    }
+
+    sendBtn.onclick = talk;
+    userInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") talk();
+    });
+
+    teachInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") saveTeaching();
+    });
+
+    function saveTeaching() {
+      const answer = teachInput.value.trim();
+      if (!answer) return;
+      if (!memory[pendingQuestion]) memory[pendingQuestion] = [];
+      memory[pendingQuestion].push(answer);
+      saveMemory();
+      print("bot", "Got it! I'll remember that.");
+      teachBox.style.display = "none";
+      teachInput.value = "";
+      pendingQuestion = null;
+    }
+
+    document.getElementById("teachSave").onclick = saveTeaching;
+
+    forgetBtn.onclick = () => {
+      if (confirm("Erase all my memories?")) {
+        memory = {};
+        localStorage.removeItem("neobotMemory");
+        print("bot", "All memories erased.");
+      }
+    };
+
+    // Greeting
+    print("bot", "Hello, I’m NeoBot. Teach me things and I'll learn until you erase my memory!");
+  </script>
+</body>
+</html>
