@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Learning Bot</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroBot v2</title>
 <style>
   body {
     background: linear-gradient(135deg, #101820, #1a2a3a);
@@ -12,14 +12,25 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
     margin: 0;
   }
 
   h1 {
     color: #00d8ff;
     text-shadow: 0 0 10px #00d8ff;
+  }
+
+  #tutorial {
+    background: #1f2e3e;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 15px;
+    width: 90%;
+    max-width: 600px;
+    font-size: 14px;
   }
 
   #chatbox {
@@ -30,13 +41,17 @@
     border-radius: 15px;
     box-shadow: 0 0 20px rgba(0, 216, 255, 0.3);
     overflow-y: auto;
-    height: 60vh;
+    height: 55vh;
+    display: flex;
+    flex-direction: column;
   }
 
   .message {
-    margin: 10px 0;
-    padding: 10px;
+    margin: 8px 0;
+    padding: 8px 12px;
     border-radius: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
   }
 
   .user {
@@ -65,37 +80,34 @@
     outline: none;
   }
 
-  #sendBtn {
-    background: #00d8ff;
-    color: #000;
+  #sendBtn, #forgetBtn {
     border: none;
     padding: 10px 20px;
-    border-radius: 0 10px 10px 0;
     cursor: pointer;
     font-weight: bold;
+    border-radius: 0 10px 10px 0;
+    margin-left: 5px;
   }
 
-  #sendBtn:hover {
-    background: #00a3cc;
-  }
+  #sendBtn { background: #00d8ff; color: #000; }
+  #sendBtn:hover { background: #00a3cc; }
+
+  #forgetBtn { background: #ff3b3b; color: #fff; }
+  #forgetBtn:hover { background: #cc0000; }
 
   #memoryTab {
     display: none;
     background: #0f1923;
     color: #fff;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     padding: 20px;
     overflow-y: auto;
     z-index: 10;
   }
 
-  #memoryTab h2 {
-    color: #00d8ff;
-  }
+  #memoryTab h2 { color: #00d8ff; }
 
   #closeMemories {
     background: #ff3b3b;
@@ -124,13 +136,9 @@
     float: right;
   }
 
-  #addQAForm {
-    margin-top: 15px;
-  }
-
   #addQAForm input {
     padding: 8px;
-    margin: 5px;
+    margin: 5px 5px 5px 0;
     border-radius: 5px;
     border: none;
   }
@@ -143,37 +151,46 @@
     cursor: pointer;
   }
 
-  #addQAForm button:hover {
-    background: #00a3cc;
-  }
+  #addQAForm button:hover { background: #00a3cc; }
 </style>
 </head>
 <body>
-  <h1>Learning Bot 🤖</h1>
-  <div id="chatbox"></div>
+<h1>NeuroBot v2 🤖</h1>
 
-  <div id="input-area">
-    <input type="text" id="userInput" placeholder="Type your message..." />
-    <button id="sendBtn">Send</button>
-  </div>
+<div id="tutorial">
+  <b>Welcome!</b><br>
+  - Type anything in the box below to chat.<br>
+  - Teach me new replies if I don’t know an answer.<br>
+  - Type <code>memories</code> to view or edit my learned questions (protected).<br>
+  - Use <b>Forget Everything</b> to reset memory.<br>
+</div>
 
-  <div id="memoryTab">
-    <button id="closeMemories">Close</button>
-    <h2>🧠 Memory Viewer</h2>
-    <div id="memoryList"></div>
+<div id="chatbox"></div>
 
-    <h3>Add New Q&A</h3>
-    <form id="addQAForm">
-      <input type="text" id="newQuestion" placeholder="Question" required />
-      <input type="text" id="newAnswer" placeholder="Answer" required />
-      <button type="submit">Add</button>
-    </form>
-  </div>
+<div id="input-area">
+  <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off" />
+  <button id="sendBtn">Send</button>
+  <button id="forgetBtn">Forget Everything</button>
+</div>
+
+<div id="memoryTab">
+  <button id="closeMemories">Close</button>
+  <h2>🧠 Memory Viewer</h2>
+  <div id="memoryList"></div>
+
+  <h3>Add New Q&A</h3>
+  <form id="addQAForm">
+    <input type="text" id="newQuestion" placeholder="Question" required />
+    <input type="text" id="newAnswer" placeholder="Answer" required />
+    <button type="submit">Add</button>
+  </form>
+</div>
 
 <script>
   const chatbox = document.getElementById("chatbox");
   const userInput = document.getElementById("userInput");
   const sendBtn = document.getElementById("sendBtn");
+  const forgetBtn = document.getElementById("forgetBtn");
   const memoryTab = document.getElementById("memoryTab");
   const memoryList = document.getElementById("memoryList");
   const closeMemories = document.getElementById("closeMemories");
@@ -184,16 +201,21 @@
     localStorage.setItem("botMemory", JSON.stringify(memory));
   }
 
-  function addMessage(text, sender) {
-    const msg = document.createElement("div");
-    msg.classList.add("message", sender);
-    msg.textContent = text;
-    chatbox.appendChild(msg);
-    chatbox.scrollTop = chatbox.scrollHeight;
+  function addMessage(text, sender, delay=0) {
+    setTimeout(() => {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      msg.textContent = text;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }, delay);
   }
 
+  // Intro
+  addMessage("Hello! I’m NeuroBot. I can learn your responses and chat with you!", "bot", 500);
+
   function getBotResponse(input) {
-    const lowerInput = input.toLowerCase();
+    const lowerInput = input.toLowerCase().trim();
     if (lowerInput === "memories") {
       openMemoryTab();
       return null;
@@ -222,7 +244,7 @@
     addMessage(text, "user");
 
     const reply = getBotResponse(text);
-    if (reply) addMessage(reply, "bot");
+    if (reply) addMessage(reply, "bot", 400);
 
     userInput.value = "";
   };
@@ -231,8 +253,26 @@
     if (e.key === "Enter") sendBtn.click();
   });
 
+  forgetBtn.onclick = () => {
+    if (confirm("Are you sure you want to erase all memory?")) {
+      memory = {};
+      saveMemory();
+      addMessage("I’ve forgotten everything you taught me!", "bot");
+    }
+  };
+
   function openMemoryTab() {
+    const code = prompt("Enter access code to open memory:");
+    if (code !== "memories") return alert("Wrong code!");
     memoryTab.style.display = "block";
+    updateMemoryTab();
+  }
+
+  closeMemories.onclick = () => {
+    memoryTab.style.display = "none";
+  };
+
+  function updateMemoryTab() {
     memoryList.innerHTML = "";
     for (const question in memory) {
       const qaDiv = document.createElement("div");
@@ -241,20 +281,15 @@
       <button class="deleteBtn" data-q="${question}">Delete</button>`;
       memoryList.appendChild(qaDiv);
     }
-
     document.querySelectorAll(".deleteBtn").forEach(btn => {
       btn.onclick = () => {
         const q = btn.getAttribute("data-q");
         delete memory[q];
         saveMemory();
-        openMemoryTab();
+        updateMemoryTab();
       };
     });
   }
-
-  closeMemories.onclick = () => {
-    memoryTab.style.display = "none";
-  };
 
   document.getElementById("addQAForm").onsubmit = (e) => {
     e.preventDefault();
@@ -263,9 +298,10 @@
     if (!memory[q]) memory[q] = [];
     memory[q].push(a);
     saveMemory();
-    openMemoryTab();
+    updateMemoryTab();
     e.target.reset();
   };
 </script>
 </body>
 </html>
+
