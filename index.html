@@ -1,186 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NeoBot – Self-Learning Chat</title>
-
+  <meta charset="UTF-8">
+  <title>NeuroBot - Learns and Forgets</title>
   <style>
-    * { box-sizing: border-box; }
     body {
-      background: radial-gradient(circle at top, #0a0a0a 0%, #000 80%);
-      color: #0ff;
-      font-family: "Courier New", monospace;
+      background: #0d0d0d;
+      color: #00ff99;
+      font-family: 'Courier New', monospace;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
       height: 100vh;
-      margin: 0;
+      padding: 30px;
     }
+
     h1 {
-      margin: 20px 0 10px;
-      color: #0ff;
-      text-shadow: 0 0 10px #0ff;
+      color: #00ffaa;
+      text-shadow: 0 0 10px #00ffaa;
+      margin-bottom: 10px;
     }
-    #chat {
-      flex: 1;
+
+    #log {
       width: 90%;
       max-width: 700px;
-      border: 1px solid #0ff;
+      height: 400px;
+      border: 1px solid #00ff99;
       border-radius: 10px;
-      padding: 10px;
+      background: rgba(0, 20, 10, 0.8);
       overflow-y: auto;
-      background: rgba(0, 255, 255, 0.05);
-      box-shadow: 0 0 20px #0ff2;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 0 15px #00ff99;
     }
-    .msg { margin: 5px 0; }
-    .user { color: #8f8; }
-    .bot { color: #0ff; }
-    #inputArea {
-      width: 90%;
-      max-width: 700px;
-      display: flex;
-      gap: 10px;
-      margin: 15px 0;
+
+    .user {
+      color: #ff66ff;
+      margin: 4px 0;
     }
+
+    .bot {
+      color: #00ffcc;
+      margin: 4px 0;
+    }
+
     input {
-      flex: 1;
+      width: 60%;
+      padding: 10px;
+      border: 2px solid #00ffaa;
+      border-radius: 8px;
       background: #000;
-      color: #0ff;
-      border: 1px solid #0ff;
-      border-radius: 5px;
-      padding: 8px;
+      color: #00ffaa;
+      font-family: 'Courier New', monospace;
+      outline: none;
     }
+
     button {
-      background: #0ff;
+      background: #00ffaa;
       border: none;
-      border-radius: 5px;
-      padding: 8px 15px;
+      padding: 10px 15px;
+      margin-left: 10px;
+      border-radius: 8px;
+      color: #000;
       font-weight: bold;
       cursor: pointer;
-      color: #000;
       transition: 0.2s;
     }
-    button:hover { background: #8ff; }
-    #teachBox {
-      display: none;
-      flex-direction: column;
-      gap: 8px;
+
+    button:hover {
+      background: #00cc88;
+    }
+
+    #forgetBtn {
+      background: #ff3377;
+      color: white;
       margin-top: 10px;
-      width: 90%;
-      max-width: 700px;
-      background: rgba(0, 255, 255, 0.08);
-      border: 1px solid #0ff;
-      border-radius: 8px;
-      padding: 10px;
     }
-    #teachBox input {
-      width: 100%;
-      border: 1px solid #0ff;
+
+    #forgetBtn:hover {
+      background: #cc0055;
     }
-    #forget {
-      margin-bottom: 10px;
-      background: #f00;
-      color: #fff;
+
+    footer {
+      margin-top: auto;
+      color: #666;
+      font-size: 14px;
     }
-    #forget:hover { background: #f66; }
-    ::selection { background: #0ff; color: #000; }
   </style>
 </head>
 <body>
-  <h1>🤖 NeoBot</h1>
-  <button id="forget">Forget Everything</button>
-
-  <div id="chat"></div>
-
-  <div id="inputArea">
-    <input id="userInput" placeholder="Type your message..." autocomplete="off" />
-    <button id="sendBtn">Send</button>
+  <h1>🧠 NeuroBot: The Forgetful Learner</h1>
+  <div id="log"></div>
+  <div>
+    <input id="userInput" placeholder="Say something..." autocomplete="off" />
+    <button onclick="talk()">Send</button>
   </div>
+  <button id="forgetBtn" onclick="forgetMemory()">Forget Everything</button>
 
-  <div id="teachBox">
-    <p id="teachPrompt"></p>
-    <input id="teachInput" placeholder="Type what I should reply..." />
-    <button id="teachSave">Save</button>
-  </div>
+  <footer>Bot forgets everything when page closes 🌀</footer>
 
   <script>
-    // ===== Brain and memory =====
-    let memory = JSON.parse(localStorage.getItem("neobotMemory") || "{}");
+    // In-memory "brain" that resets when page closes
+    const memory = {};
 
-    const chat = document.getElementById("chat");
-    const userInput = document.getElementById("userInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const teachBox = document.getElementById("teachBox");
-    const teachPrompt = document.getElementById("teachPrompt");
-    const teachInput = document.getElementById("teachInput");
-    const forgetBtn = document.getElementById("forget");
-
-    let pendingQuestion = null;
-
-    function print(role, text) {
-      const div = document.createElement("div");
-      div.classList.add("msg", role);
-      div.textContent = (role === "user" ? "You: " : "Bot: ") + text;
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function saveMemory() {
-      localStorage.setItem("neobotMemory", JSON.stringify(memory));
+    function logMessage(sender, message) {
+      const log = document.getElementById('log');
+      const className = sender === 'You' ? 'user' : 'bot';
+      log.innerHTML += `<p class="${className}"><b>${sender}:</b> ${message}</p>`;
+      log.scrollTop = log.scrollHeight;
     }
 
     function talk() {
-      const msg = userInput.value.trim();
-      if (!msg) return;
-      print("user", msg);
-      userInput.value = "";
+      const inputBox = document.getElementById('userInput');
+      const input = inputBox.value.trim().toLowerCase();
+      if (!input) return;
+      logMessage('You', input);
+      inputBox.value = "";
 
-      const key = msg.toLowerCase();
-      if (memory[key]) {
-        const replies = memory[key];
-        const reply = replies[Math.floor(Math.random() * replies.length)];
-        print("bot", reply);
+      if (memory[input]) {
+        const possibleReplies = memory[input];
+        const reply = possibleReplies[Math.floor(Math.random() * possibleReplies.length)];
+        logMessage('Bot', reply);
       } else {
-        pendingQuestion = key;
-        teachPrompt.textContent = `I don't know how to reply to "${msg}". What should I say?`;
-        teachBox.style.display = "flex";
+        const teach = prompt("🤖 I don't know how to respond. What should I say?");
+        if (teach) {
+          if (!memory[input]) memory[input] = [];
+          memory[input].push(teach);
+          logMessage('Bot', "Got it! I'll remember that... for now.");
+        } else {
+          logMessage('Bot', "Okay, skipping that one.");
+        }
       }
     }
 
-    sendBtn.onclick = talk;
-    userInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") talk();
+    // Let Enter key send message
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') talk();
     });
 
-    teachInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") saveTeaching();
-    });
-
-    function saveTeaching() {
-      const answer = teachInput.value.trim();
-      if (!answer) return;
-      if (!memory[pendingQuestion]) memory[pendingQuestion] = [];
-      memory[pendingQuestion].push(answer);
-      saveMemory();
-      print("bot", "Got it! I'll remember that.");
-      teachBox.style.display = "none";
-      teachInput.value = "";
-      pendingQuestion = null;
+    // Forget memory manually
+    function forgetMemory() {
+      for (let key in memory) delete memory[key];
+      alert("🧹 Memory wiped clean!");
+      logMessage('Bot', "I’ve forgotten everything you taught me!");
     }
-
-    document.getElementById("teachSave").onclick = saveTeaching;
-
-    forgetBtn.onclick = () => {
-      if (confirm("Erase all my memories?")) {
-        memory = {};
-        localStorage.removeItem("neobotMemory");
-        print("bot", "All memories erased.");
-      }
-    };
-
-    // Greeting
-    print("bot", "Hello, I’m NeoBot. Teach me things and I'll learn until you erase my memory!");
   </script>
 </body>
 </html>
