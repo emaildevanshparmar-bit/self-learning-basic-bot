@@ -3,323 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NeuroBot v2</title>
+<title>NeuroBot</title>
 <style>
   body {
-    background: linear-gradient(135deg, #101820, #1a2a3a);
-    color: #fff;
-    font-family: "Poppins", sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: 100vh;
-    padding: 20px;
+    background: #0b0c10;
+    color: #c5c6c7;
+    font-family: 'Segoe UI', sans-serif;
     margin: 0;
+    display: flex;
+    height: 100vh;
   }
-
-  h1 {
-    color: #00d8ff;
-    text-shadow: 0 0 10px #00d8ff;
-  }
-
-  #tutorial {
-    background: #1f2e3e;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 15px;
-    width: 90%;
-    max-width: 600px;
-    font-size: 14px;
-  }
-
-  #chatbox {
-    width: 90%;
-    max-width: 600px;
-    background: #1f2e3e;
+  #sidebar, #about {
+    width: 20%;
     padding: 15px;
-    border-radius: 15px;
-    box-shadow: 0 0 20px rgba(0, 216, 255, 0.3);
-    overflow-y: auto;
-    height: 55vh;
+    background: #1f2833;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    text-align: center;
   }
-
-  .message {
-    margin: 8px 0;
-    padding: 8px 12px;
-    border-radius: 10px;
-    max-width: 80%;
-    word-wrap: break-word;
-  }
-
-  .user {
-    background: #007acc;
-    align-self: flex-end;
-    text-align: right;
-  }
-
-  .bot {
-    background: #263646;
-    align-self: flex-start;
-  }
-
-  #input-area {
-    display: flex;
-    margin-top: 15px;
-    width: 90%;
-    max-width: 600px;
-  }
-
-  #userInput {
+  #chat {
     flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 10px 0 0 10px;
-    outline: none;
-  }
-
-  #sendBtn, #forgetBtn {
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-weight: bold;
-    border-radius: 0 10px 10px 0;
-    margin-left: 5px;
-  }
-
-  #sendBtn { background: #00d8ff; color: #000; }
-  #sendBtn:hover { background: #00a3cc; }
-
-  #forgetBtn { background: #ff3b3b; color: #fff; }
-  #forgetBtn:hover { background: #cc0000; }
-
-  #memoryTab {
-    display: none;
-    background: #0f1923;
-    color: #fff;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     padding: 20px;
+  }
+  #messages {
+    flex: 1;
     overflow-y: auto;
-    z-index: 10;
-  }
-
-  #memoryTab h2 { color: #00d8ff; }
-
-  #closeMemories {
-    background: #ff3b3b;
-    border: none;
-    padding: 8px 12px;
-    color: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-    float: right;
-  }
-
-  .qa {
-    background: #1f2e3e;
-    padding: 10px;
-    border-radius: 10px;
     margin-bottom: 10px;
   }
-
-  .deleteBtn {
-    background: #ff5555;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-    float: right;
+  .bubble {
+    padding: 10px 15px;
+    border-radius: 12px;
+    margin: 8px 0;
+    max-width: 75%;
+    animation: fadeIn 0.3s ease;
   }
-
-  #addQAForm input {
-    padding: 8px;
-    margin: 5px 5px 5px 0;
-    border-radius: 5px;
-    border: none;
+  .user { background: #45a29e; align-self: flex-end; }
+  .bot { background: #1f2833; align-self: flex-start; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px);} to { opacity: 1; transform: translateY(0);} }
+  input { width: 80%; padding: 10px; border-radius: 5px; border: none; }
+  button { background: #66fcf1; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+  button:hover { background: #45a29e; }
+  #memoryManager {
+    display: none;
+    background: #0b0c10;
+    position: fixed;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 80%;
+    overflow-y: auto;
+    border: 2px solid #45a29e;
+    padding: 20px;
+    z-index: 999;
   }
-
-  #addQAForm button {
-    padding: 8px 15px;
-    background: #00d8ff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  #addQAForm button:hover { background: #00a3cc; }
 </style>
 </head>
 <body>
-<h1>NeuroBot v2 🤖</h1>
 
-<div id="tutorial">
-  <b>Welcome!</b><br>
-  - Type anything in the box below to chat.<br>
-  - Teach me new replies if I don’t know an answer.<br>
-  - Type <code>memories</code> to view or edit my learned questions (protected).<br>
-  - Use <b>Forget Everything</b> to reset memory.<br>
+<div id="sidebar">
+  <h3>⚠️ Disclaimer</h3>
+  <p>This bot learns from public input. All responses are visible to others. Do <b>not</b> enter personal information.</p>
 </div>
 
-<div id="chatbox"></div>
-
-<div id="input-area">
-  <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off" />
-  <button id="sendBtn">Send</button>
-  <button id="forgetBtn">Forget Everything</button>
+<div id="chat">
+  <div id="messages"></div>
+  <div>
+    <input id="userInput" placeholder="Type a message..." />
+    <button id="sendBtn">Send</button>
+    <button id="memoriesBtn">Memories</button>
+  </div>
 </div>
 
-<div id="memoryTab">
-  <button id="closeMemories">Close</button>
-  <h2>🧠 Memory Viewer</h2>
-  <div id="memoryList"></div>
-
-  <h3>Add New Q&A</h3>
-  <form id="addQAForm">
-    <input type="text" id="newQuestion" placeholder="Question" required />
-    <input type="text" id="newAnswer" placeholder="Answer" required />
-    <button type="submit">Add</button>
-  </form>
+<div id="about">
+  <h3>👨‍💻 About Developer</h3>
+  <p>Made with HTML, CSS, JavaScript, and Firebase.<br> Created to explore crowd-taught AI learning.</p>
 </div>
 
-<script>
-  const chatbox = document.getElementById("chatbox");
-  const userInput = document.getElementById("userInput");
-  const sendBtn = document.getElementById("sendBtn");
-  const forgetBtn = document.getElementById("forgetBtn");
-  const memoryTab = document.getElementById("memoryTab");
-  const memoryList = document.getElementById("memoryList");
-  const closeMemories = document.getElementById("closeMemories");
+<div id="memoryManager"></div>
 
-  let memory = JSON.parse(localStorage.getItem("botMemory")) || {};
-
-  function saveMemory() {
-    localStorage.setItem("botMemory", JSON.stringify(memory));
-  }
-
-  function addMessage(text, sender, delay=0) {
-    setTimeout(() => {
-      const msg = document.createElement("div");
-      msg.classList.add("message", sender);
-      msg.textContent = text;
-      chatbox.appendChild(msg);
-      chatbox.scrollTop = chatbox.scrollHeight;
-    }, delay);
-  }
-
-  // Intro
-  addMessage("Hello! I’m NeuroBot. I can learn your responses and chat with you!", "bot", 500);
-
-  function getBotResponse(input) {
-    const lowerInput = input.toLowerCase().trim();
-    if (lowerInput === "memories") {
-      openMemoryTab();
-      return null;
-    }
-
-    if (memory[lowerInput]) {
-      const replies = memory[lowerInput];
-      const randomReply = replies[Math.floor(Math.random() * replies.length)];
-      return randomReply;
-    } else {
-      const newReply = prompt("I don’t know that yet. What should I say?");
-      if (newReply) {
-        if (!memory[lowerInput]) memory[lowerInput] = [];
-        memory[lowerInput].push(newReply);
-        saveMemory();
-        return "Got it! I'll remember that.";
-      } else {
-        return "Okay, no problem!";
-      }
-    }
-  }
-
-  sendBtn.onclick = () => {
-    const text = userInput.value.trim();
-    if (!text) return;
-    addMessage(text, "user");
-
-    const reply = getBotResponse(text);
-    if (reply) addMessage(reply, "bot", 400);
-
-    userInput.value = "";
-  };
-
-  userInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendBtn.click();
-  });
-
-  forgetBtn.onclick = () => {
-    if (confirm("Are you sure you want to erase all memory?")) {
-      memory = {};
-      saveMemory();
-      addMessage("I’ve forgotten everything you taught me!", "bot");
-    }
-  };
-
-  function openMemoryTab() {
-    const code = prompt("Enter access code to open memory:");
-    if (code !== "memories") return alert("Wrong code!");
-    memoryTab.style.display = "block";
-    updateMemoryTab();
-  }
-
-  closeMemories.onclick = () => {
-    memoryTab.style.display = "none";
-  };
-
-  function updateMemoryTab() {
-    memoryList.innerHTML = "";
-    for (const question in memory) {
-      const qaDiv = document.createElement("div");
-      qaDiv.classList.add("qa");
-      qaDiv.innerHTML = `<strong>${question}</strong>: ${memory[question].join(", ")}
-      <button class="deleteBtn" data-q="${question}">Delete</button>`;
-      memoryList.appendChild(qaDiv);
-    }
-    document.querySelectorAll(".deleteBtn").forEach(btn => {
-      btn.onclick = () => {
-        const q = btn.getAttribute("data-q");
-        delete memory[q];
-        saveMemory();
-        updateMemoryTab();
-      };
-    });
-  }
-
-  document.getElementById("addQAForm").onsubmit = (e) => {
-    e.preventDefault();
-    const q = document.getElementById("newQuestion").value.trim().toLowerCase();
-    const a = document.getElementById("newAnswer").value.trim();
-    if (!memory[q]) memory[q] = [];
-    memory[q].push(a);
-    saveMemory();
-    updateMemoryTab();
-    e.target.reset();
-  };
-</script>
-  <script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
-    const firebaseConfig = {
-  apiKey: "AIzaSyBKqdSgdGexXwpoWOW8m87BEziPXl13nwc",
-  authDomain: "neurobot-selflearning.firebaseapp.com",
-  projectId: "neurobot-selflearning",
-  storageBucket: "neurobot-selflearning.firebasestorage.app",
-  messagingSenderId: "437939077021",
-  appId: "1:437939077021:web:2a8197e7b9060d884ab974",
-  measurementId: "G-G1CVJ0W44H"
-}
+    apiKey: "AIzaSyBKqdSgdGexXwpoWOW8m87BEziPXl13nwc",
+    authDomain: "neurobot-selflearning.firebaseapp.com",
+    projectId: "neurobot-selflearning",
+    storageBucket: "neurobot-selflearning.firebasestorage.app",
+    messagingSenderId: "437939077021",
+    appId: "1:437939077021:web:2a8197e7b9060d884ab974",
+    measurementId: "G-G1CVJ0W44H"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  const messages = document.getElementById("messages");
+  const input = document.getElementById("userInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const memoryBtn = document.getElementById("memoriesBtn");
+  const memoryManager = document.getElementById("memoryManager");
+
+  function addMessage(text, sender) {
+    const div = document.createElement("div");
+    div.classList.add("bubble", sender);
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function typeMessage(text) {
+    let i = 0;
+    const div = document.createElement("div");
+    div.classList.add("bubble", "bot");
+    messages.appendChild(div);
+    const interval = setInterval(() => {
+      div.textContent += text[i];
+      i++;
+      if (i >= text.length) clearInterval(interval);
+    }, 40);
+  }
 
   async function getResponse(question) {
     const q = question.toLowerCase();
@@ -330,7 +137,7 @@
       const answers = docSnap.data().answers;
       return answers[Math.floor(Math.random() * answers.length)];
     } else {
-      const answer = prompt("I don’t know this yet! Teach me:");
+      const answer = prompt("I don't know this yet! Teach me:");
       if (answer) {
         await setDoc(docRef, { answers: [answer] });
         return "Got it! I learned something new.";
@@ -340,10 +147,54 @@
     }
   }
 
-  // Test the function in the browser console
-  window.getResponse = getResponse;
-</script>
+  async function openMemoryManager() {
+    const code = prompt("Enter access code:");
+    if (code !== "memories") return alert("Incorrect code.");
+    memoryManager.style.display = "block";
+    memoryManager.innerHTML = "<h2>NeuroBot Memories</h2>";
 
+    const col = await (await fetch(`https://firestore.googleapis.com/v1/projects/neurobot-selflearning/databases/(default)/documents/responses`)).json();
+    if (!col.documents) return memoryManager.innerHTML += "<p>No memories yet.</p>";
+
+    col.documents.forEach(doc => {
+      const q = doc.name.split("/").pop();
+      const answers = doc.fields.answers.arrayValue.values.map(v => v.stringValue);
+      const section = document.createElement("div");
+      section.innerHTML = `<h3>${q}</h3>`;
+      answers.forEach((ans, i) => {
+        const p = document.createElement("p");
+        p.textContent = ans;
+        const del = document.createElement("button");
+        del.textContent = "Delete";
+        del.onclick = async () => {
+          answers.splice(i, 1);
+          await setDoc(docRef, { answers });
+          p.remove();
+        };
+        section.appendChild(p);
+        section.appendChild(del);
+      });
+      memoryManager.appendChild(section);
+    });
+
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "Close";
+    closeBtn.onclick = () => memoryManager.style.display = "none";
+    memoryManager.appendChild(closeBtn);
+  }
+
+  sendBtn.onclick = async () => {
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(text, "user");
+    input.value = "";
+    const reply = await getResponse(text);
+    setTimeout(() => typeMessage(reply), 400);
+  };
+
+  memoryBtn.onclick = openMemoryManager;
+
+  addMessage("👋 Hi! I'm NeuroBot — a learning bot powered by public input. Ask me something!", "bot");
+</script>
 </body>
 </html>
-
