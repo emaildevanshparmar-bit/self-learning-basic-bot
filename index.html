@@ -302,6 +302,48 @@
     e.target.reset();
   };
 </script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    const firebaseConfig = {
+  apiKey: "AIzaSyBKqdSgdGexXwpoWOW8m87BEziPXl13nwc",
+  authDomain: "neurobot-selflearning.firebaseapp.com",
+  projectId: "neurobot-selflearning",
+  storageBucket: "neurobot-selflearning.firebasestorage.app",
+  messagingSenderId: "437939077021",
+  appId: "1:437939077021:web:2a8197e7b9060d884ab974",
+  measurementId: "G-G1CVJ0W44H"
+}
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function getResponse(question) {
+    const q = question.toLowerCase();
+    const docRef = doc(db, "responses", q);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const answers = docSnap.data().answers;
+      return answers[Math.floor(Math.random() * answers.length)];
+    } else {
+      const answer = prompt("I don’t know this yet! Teach me:");
+      if (answer) {
+        await setDoc(docRef, { answers: [answer] });
+        return "Got it! I learned something new.";
+      } else {
+        return "Okay, maybe later!";
+      }
+    }
+  }
+
+  // Test the function in the browser console
+  window.getResponse = getResponse;
+</script>
+
 </body>
 </html>
 
